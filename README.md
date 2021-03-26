@@ -1,4 +1,4 @@
-```
+```java
 public static void main(String[] args) throws IOException {
     SocketAddress address = new InetSocketAddress("localhost", 25575);
 
