@@ -8,32 +8,34 @@ import java.nio.charset.StandardCharsets;
 
 class PacketWriter {
 
-    final private WritableByteChannel writableChannel;
+    final private Destination destination;
+    final ByteBuffer buffer;
 
-    public PacketWriter(final WritableByteChannel channel) {
-        this.writableChannel = channel;
+    public PacketWriter(final Destination destination,
+                        final int bufferCapacity) {
+        this.destination = destination;
+
+        buffer = ByteBuffer.allocate(bufferCapacity)
+                .order(ByteOrder.LITTLE_ENDIAN);
     }
 
     public int write(final Packet packet) throws IOException {
-        final int length = 14 + packet.payload.length();
-
-        if (length > 1460) {
-            throw new IllegalStateException("Packet size too big");
+        if (packet.payload.length() > 1446) {
+            throw new IllegalArgumentException("Packet payload too big");
         }
 
-        final ByteBuffer buffer = ByteBuffer.allocate(14 + packet.payload.length());
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.clear();
 
-        buffer.putInt(length - 4);
-        buffer.putInt(packet.requestId);
-        buffer.putInt(packet.type.id);
-
-        buffer.put(StandardCharsets.US_ASCII.encode(packet.payload));
-        buffer.put((byte) 0x00);
-        buffer.put((byte) 0x00);
+        buffer.putInt(10 + packet.payload.length());
+        PacketCodec.encode(packet, buffer);
 
         buffer.flip();
+        return destination.write(buffer);
+    }
 
-        return writableChannel.write(buffer);
+    @FunctionalInterface
+    public interface Destination {
+
+        int write(ByteBuffer source) throws IOException;
     }
 }

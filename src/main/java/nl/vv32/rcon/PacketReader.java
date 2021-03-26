@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
 
 class PacketReader {
 
-    final private ReadableByteChannel readableChannel;
+    final private Source source;
 
-    public PacketReader(final ReadableByteChannel channel) {
-        this.readableChannel = channel;
+    public PacketReader(final Source source) {
+        this.source = source;
     }
 
     final ByteBuffer buffer = ByteBuffer.allocate(4110)
@@ -26,32 +25,13 @@ class PacketReader {
         final int length = buffer.getInt();
         buffer.compact();
 
-        //Read packet ID
-        readUntilAvailable(Integer.BYTES);
+        //Read packet
+        readUntilAvailable(length);
         buffer.flip();
-        final int requestId = buffer.getInt();
+        final Packet packet = PacketCodec.decode(buffer, length);
         buffer.compact();
 
-        //Read type
-        readUntilAvailable(Integer.BYTES);
-        buffer.flip();
-        final int type = buffer.getInt();
-        buffer.compact();
-
-        //Read payload
-        readUntilAvailable(length - 10);
-        buffer.flip();
-        int available = buffer.remaining();
-        buffer.limit(length-10);
-        final String payload = StandardCharsets.US_ASCII.decode(buffer).toString();
-        buffer.limit(available);
-
-        //Read padding
-        buffer.get(); // payload null-termination
-        buffer.get(); // packet padding
-
-        buffer.compact();
-        return new Packet(requestId, PacketType.fromId(type), payload);
+        return packet;
     }
 
     private void readUntilAvailable(final int bytesAvailable)
@@ -59,9 +39,15 @@ class PacketReader {
 
         while (buffer.position() < bytesAvailable) {
 
-            if (readableChannel.read(buffer) == -1) {
+            if (source.read(buffer) == -1) {
                 throw new EOFException();
             }
         }
+    }
+
+    @FunctionalInterface
+    public interface Source {
+
+        int read(ByteBuffer destination) throws IOException;
     }
 }
