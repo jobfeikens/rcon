@@ -4,7 +4,8 @@ public enum PacketType {
 
     COMMAND_RESPONSE(0),
     COMMAND(2),
-    LOGIN(3);
+    LOGIN(3),
+    UNKNOWN(4);
 
     final public int id;
 
@@ -18,7 +19,7 @@ public enum PacketType {
             case 0: return COMMAND_RESPONSE;
             case 2: return COMMAND;
             case 3: return LOGIN;
-            default: throw new IllegalArgumentException();
+            default: return UNKNOWN;
         }
     }
 }

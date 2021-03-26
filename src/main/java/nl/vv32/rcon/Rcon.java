@@ -14,13 +14,14 @@ public class Rcon implements Closeable {
     final private PacketWriter writer;
 
     private boolean authenticated = false;
+    private boolean closed = false;
     private int requestCounter;
 
     Rcon(final ByteChannel channel) {
         this.channel = channel;
 
-        reader = new PacketReader(channel);
-        writer = new PacketWriter(channel);
+        reader = new PacketReader(channel::read);
+        writer = new PacketWriter(channel::write, 1460);
     }
 
     public static Rcon open(final SocketAddress remote) throws IOException {
@@ -29,6 +30,7 @@ public class Rcon implements Closeable {
 
     synchronized public boolean authenticate(final String password)
             throws IOException {
+        requireOpen();
 
         if (!authenticated) {
             final Packet response = writeAndRead(PacketType.LOGIN, password);
@@ -43,6 +45,7 @@ public class Rcon implements Closeable {
 
     synchronized public String sendCommand(final String command)
             throws IOException {
+        requireOpen();
 
         if (!authenticated) {
             throw new IllegalStateException("Not authenticated");
@@ -68,24 +71,15 @@ public class Rcon implements Closeable {
         return response;
     }
 
-    boolean isAuthenticated() {
-        return authenticated;
+    private void requireOpen() {
+        if (closed) {
+            throw new IllegalStateException("Rcon closed");
+        }
     }
 
     @Override
     public void close() throws IOException {
         channel.close();
-    }
-
-    public static void main(String... args) throws IOException {
-        SocketAddress address = new InetSocketAddress("localhost", 25575);
-
-        try(Rcon rcon = Rcon.open(address)) {
-            if (rcon.authenticate("test")) {
-                rcon.sendCommand("say Hello World");
-            } else {
-                System.out.println("Failed to authenticate");
-            }
-        }
+        closed = true;
     }
 }
