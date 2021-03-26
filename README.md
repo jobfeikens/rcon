@@ -1,3 +1,7 @@
+#RCON
+My implementation of the RCON protocol in Java.
+
+## Example (Java 8)
 ```java
 public static void main(String[] args) throws IOException {
     SocketAddress address = new InetSocketAddress("localhost", 25575);
