@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="nl.vv32.rcon.RconTests" tests="2" skipped="0" failures="0" errors="0" timestamp="2021-03-26T14:43:19" hostname="jobdesktop" time="0.022">
+  <properties/>
+  <testcase name="authenticate()" classname="nl.vv32.rcon.RconTests" time="0.02"/>
+  <testcase name="authenticateWithWrongPassword()" classname="nl.vv32.rcon.RconTests" time="0.001"/>
+  <system-out><![CDATA[password
+password
+wrongPassword
+password
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
