@@ -1,4 +1,0 @@
-nl/vv32/rcon/util/TestChannel.java
- nl.vv32.rcon.util.TestChannel
-nl/vv32/rcon/RconTests.java
- nl.vv32.rcon.RconTests
