@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
 
-public class ServerSimulator implements ByteChannel {
+public class RconServerSimulator implements ByteChannel {
 
     private boolean isOpen = false;
 
@@ -19,22 +19,22 @@ public class ServerSimulator implements ByteChannel {
 
     final private ByteBuffer buffer = ByteBuffer.allocate(8192).order(ByteOrder.LITTLE_ENDIAN);
 
-    public ServerSimulator setPassword(String password) {
+    public RconServerSimulator setPassword(String password) {
         this.password = password;
         return this;
     }
 
-    public ServerSimulator returnWrongType() {
+    public RconServerSimulator returnWrongType() {
         returnWrongType = true;
         return this;
     }
 
-    public ServerSimulator returnWrongId() {
+    public RconServerSimulator returnWrongId() {
         returnWrongId = true;
         return this;
     }
 
-    public ServerSimulator returnEOF() {
+    public RconServerSimulator returnEOF() {
         returnEOF = true;
         return this;
     }
