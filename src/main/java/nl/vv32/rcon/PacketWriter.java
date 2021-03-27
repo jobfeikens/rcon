@@ -11,7 +11,7 @@ class PacketWriter {
     final private Destination destination;
     final ByteBuffer buffer;
 
-    public PacketWriter(final Destination destination,
+    PacketWriter(final Destination destination,
                         final int bufferCapacity) {
         this.destination = destination;
 
@@ -19,7 +19,7 @@ class PacketWriter {
                 .order(ByteOrder.LITTLE_ENDIAN);
     }
 
-    public int write(final Packet packet) throws IOException {
+    int write(final Packet packet) throws IOException {
         if (packet.payload.length() > 1446) {
             throw new IllegalArgumentException("Packet payload too big");
         }
@@ -34,7 +34,7 @@ class PacketWriter {
     }
 
     @FunctionalInterface
-    public interface Destination {
+    interface Destination {
 
         int write(ByteBuffer source) throws IOException;
     }
