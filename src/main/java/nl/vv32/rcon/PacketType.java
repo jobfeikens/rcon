@@ -1,25 +1,11 @@
 package nl.vv32.rcon;
 
-public enum PacketType {
+public class PacketType {
 
-    COMMAND_RESPONSE(0),
-    COMMAND(2),
-    LOGIN(3),
-    UNKNOWN(4);
-
-    final public int id;
-
-    PacketType(final int id) {
-        this.id = id;
-    }
-
-    public static PacketType fromId(final int id) {
-
-        switch (id) {
-            case 0: return COMMAND_RESPONSE;
-            case 2: return COMMAND;
-            case 3: return LOGIN;
-            default: return UNKNOWN;
-        }
-    }
+    private PacketType() {}
+    
+    final public static int SERVERDATA_RESPONSE_VALUE = 0;
+    final public static int SERVERDATA_EXECCOMMAND = 2;
+    final public static int SERVERDATA_AUTH_RESPONSE = 2;
+    final public static int SERVERDATA_AUTH = 3;
 }

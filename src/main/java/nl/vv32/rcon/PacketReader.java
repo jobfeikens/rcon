@@ -9,13 +9,12 @@ import java.nio.channels.ReadableByteChannel;
 class PacketReader {
 
     final private Source source;
+    final private ByteBuffer buffer; //4 KiB
 
-    public PacketReader(final Source source) {
+    public PacketReader(final Source source, int bufferCapacity) {
         this.source = source;
+        buffer = ByteBuffer.allocate(bufferCapacity).order(ByteOrder.LITTLE_ENDIAN);
     }
-
-    final ByteBuffer buffer = ByteBuffer.allocate(4110)
-            .order(ByteOrder.LITTLE_ENDIAN); //4 KiB
 
     public Packet read() throws IOException {
 
