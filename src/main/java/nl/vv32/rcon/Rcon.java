@@ -2,7 +2,6 @@ package nl.vv32.rcon;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
@@ -13,68 +12,54 @@ public class Rcon implements Closeable {
     final private PacketReader reader;
     final private PacketWriter writer;
 
-    private boolean authenticated = false;
     private boolean closed = false;
     private int requestCounter;
 
-    Rcon(final ByteChannel channel) {
+    Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
         this.channel = channel;
 
-        reader = new PacketReader(channel::read);
-        writer = new PacketWriter(channel::write, 1460);
+        reader = new PacketReader(channel::read, readBufferCapacity);
+        writer = new PacketWriter(channel::write, writeBufferCapacity);
     }
 
     public static Rcon open(final SocketAddress remote) throws IOException {
-        return new Rcon(SocketChannel.open(remote));
+        return new RconBuilder(SocketChannel.open(remote)).build();
     }
 
-    synchronized public boolean authenticate(final String password)
-            throws IOException {
-        requireOpen();
+    public synchronized boolean authenticate(final String password) throws IOException {
+        final Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
 
-        if (!authenticated) {
-            final Packet response = writeAndRead(PacketType.LOGIN, password);
-
-            if (response.type != PacketType.COMMAND) {
-                throw new IOException("Invalid login response type");
-            }
-            authenticated = response.isValid();
+        if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
+            throw new IOException("Invalid auth response type: " + response.type);
         }
-        return authenticated;
+        return response.isValid();
     }
 
-    synchronized public String sendCommand(final String command)
-            throws IOException {
-        requireOpen();
+    public synchronized String sendCommand(final String command) throws IOException {
+        final Packet response = writeAndRead(PacketType.SERVERDATA_EXECCOMMAND, command);
 
-        if (!authenticated) {
-            throw new IllegalStateException("Not authenticated");
+        if (response.type != PacketType.SERVERDATA_RESPONSE_VALUE) {
+            throw new IOException("Wrong command response type: " + response.type);
         }
-        final Packet response = writeAndRead(PacketType.COMMAND, command);
-
-        if (response.type != PacketType.COMMAND_RESPONSE) {
-            throw new IOException("Wrong command response type");
+        if (!response.isValid()) {
+            throw new IOException("Invalid command response: " + response.payload);
         }
         return response.payload;
     }
 
-    private Packet writeAndRead(
-            final PacketType type, final String payload) throws IOException {
+    private synchronized Packet writeAndRead(final int packetType, final String payload) throws IOException {
+        if (closed) {
+            throw new IllegalStateException("Trying to use RCON after close was called");
+        }
         final int requestId = requestCounter++;
 
-        writer.write(new Packet(requestId, type, payload));
+        writer.write(new Packet(requestId, packetType, payload));
         final Packet response = reader.read();
 
         if (response.isValid() && response.requestId != requestId) {
-            throw new IOException("Invalid response id");
+            throw new IOException(String.format("Unexpected response id (%d -> %d)", requestId, response.requestId));
         }
         return response;
-    }
-
-    private void requireOpen() {
-        if (closed) {
-            throw new IllegalStateException("Rcon closed");
-        }
     }
 
     @Override

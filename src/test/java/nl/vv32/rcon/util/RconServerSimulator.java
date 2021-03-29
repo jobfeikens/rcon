@@ -11,7 +11,7 @@ import java.nio.channels.ByteChannel;
 public class RconServerSimulator implements ByteChannel {
 
     private boolean isOpen = false;
-
+    private boolean isAuthenticated = false;
     private String password = "";
     private boolean returnWrongType = false;
     private boolean returnWrongId = false;
@@ -53,6 +53,9 @@ public class RconServerSimulator implements ByteChannel {
         final Packet request = PacketCodec.decode(buffer, requestLength);
         buffer.compact();
 
+        if (request.type == PacketType.SERVERDATA_AUTH) {
+            isAuthenticated = request.payload.equals(this.password);
+        }
 
         final int startPosition = destination.position();
         final Packet response = generateResponse(request);
@@ -81,28 +84,32 @@ public class RconServerSimulator implements ByteChannel {
 
     private Packet generateResponse(final Packet request) {
         int requestId = request.requestId;
-        PacketType returnType;
+        int returnType;
         String payload = "";
 
 
         switch (request.type) {
-            case LOGIN:
+            case PacketType.SERVERDATA_AUTH:
                 if (!request.payload.equals(password)) {
                     requestId = -1;
                 }
-                returnType = PacketType.COMMAND;
+                returnType = PacketType.SERVERDATA_AUTH_RESPONSE;
                 break;
-            case COMMAND:
-                returnType = PacketType.COMMAND_RESPONSE;
+            case PacketType.SERVERDATA_EXECCOMMAND:
+                returnType = PacketType.SERVERDATA_RESPONSE_VALUE;
                 payload = request.payload;
+                if (!isAuthenticated) {
+                    requestId = -1;
+                    payload = "Not authenticated";
+                }
                 break;
             default:
-                returnType = PacketType.UNKNOWN;
+                returnType = 0xff;
                 break;
         }
 
         if (returnWrongType) {
-            returnType = PacketType.UNKNOWN;
+            returnType = 0xef;
         }
         if (returnWrongId) {
             requestId++;

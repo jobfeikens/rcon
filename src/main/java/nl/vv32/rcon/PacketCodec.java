@@ -13,7 +13,7 @@ public class PacketCodec {
     public static void encode(final Packet packet, final ByteBuffer destination) {
 
         destination.putInt(packet.requestId);
-        destination.putInt(packet.type.id);
+        destination.putInt(packet.type);
         destination.put(CHARSET.encode(packet.payload));
         destination.put((byte) 0x00);
         destination.put((byte) 0x00);
@@ -21,8 +21,7 @@ public class PacketCodec {
 
     public static Packet decode(final ByteBuffer source, final int length) {
         int requestId = source.getInt();
-
-        PacketType type = PacketType.fromId(source.getInt());
+        int packetType = source.getInt();
 
         int limit = source.limit();
         source.limit(source.position() + length - 10);
@@ -32,6 +31,6 @@ public class PacketCodec {
         source.get(); // String termination
         source.get(); // Packet termination
 
-        return new Packet(requestId, type, payload);
+        return new Packet(requestId, packetType, payload);
     }
 }
