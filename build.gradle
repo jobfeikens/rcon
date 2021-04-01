@@ -2,8 +2,11 @@ plugins {
     id 'java'
 }
 
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+
 group 'nl.vv32.rcon'
-version '0.1-SNAPSHOT'
+version '0.2-SNAPSHOT'
 
 repositories {
     mavenCentral()

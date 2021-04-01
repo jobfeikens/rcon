@@ -23,7 +23,7 @@ public class Rcon implements Closeable {
     }
 
     public static Rcon open(final SocketAddress remote) throws IOException {
-        return new RconBuilder(SocketChannel.open(remote)).build();
+        return new RconBuilder().withChannel(SocketChannel.open(remote)).build();
     }
 
     public synchronized boolean authenticate(final String password) throws IOException {
