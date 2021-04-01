@@ -26,7 +26,7 @@ public class Rcon implements Closeable {
         return new RconBuilder().withChannel(SocketChannel.open(remote)).build();
     }
 
-    public synchronized boolean authenticate(final String password) throws IOException {
+    public boolean authenticate(final String password) throws IOException {
         final Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
 
         if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
@@ -35,7 +35,7 @@ public class Rcon implements Closeable {
         return response.isValid();
     }
 
-    public synchronized String sendCommand(final String command) throws IOException {
+    public String sendCommand(final String command) throws IOException {
         final Packet response = writeAndRead(PacketType.SERVERDATA_EXECCOMMAND, command);
 
         if (response.type != PacketType.SERVERDATA_RESPONSE_VALUE) {
