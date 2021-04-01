@@ -1,19 +1,21 @@
 package nl.vv32.rcon;
 
 import java.nio.channels.ByteChannel;
+import java.util.Objects;
 
 public class RconBuilder {
 
     public static int DEFAULT_READ_BUFFER_CAPACITY = 4110;
     public static int DEFAULT_WRITE_BUFFER_SIZE = 1460;
 
-    final private ByteChannel channel;
+    private ByteChannel channel;
 
     private Integer readBufferCapacity;
     private Integer writeBufferCapacity;
 
-    public RconBuilder(final ByteChannel channel) {
+    public RconBuilder withChannel(ByteChannel channel) {
         this.channel = channel;
+        return this;
     }
 
     public RconBuilder withReadBufferCapacity(final int readBufferCapacity) {
@@ -27,7 +29,8 @@ public class RconBuilder {
     }
 
     public Rcon build() {
-        return new Rcon(channel,
+
+        return new Rcon(Objects.requireNonNull(channel, "channel"),
                 readBufferCapacity != null ? readBufferCapacity : DEFAULT_READ_BUFFER_CAPACITY,
                 writeBufferCapacity != null ? writeBufferCapacity : DEFAULT_WRITE_BUFFER_SIZE);
     }

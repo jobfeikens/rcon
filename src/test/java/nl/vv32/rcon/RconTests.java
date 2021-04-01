@@ -19,52 +19,52 @@ public class RconTests {
 
     @Test
     void authenticate() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         assertTrue(rcon.authenticate("password"));
     }
 
     @Test
     void authenticateTwice() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         assertTrue(rcon.authenticate("password"));
         assertTrue(rcon.authenticate("password"));
     }
 
     @Test
     void authenticateWithWrongPassword() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         assertFalse(rcon.authenticate("wrongPassword"));
     }
 
     @Test
     void authenticateWrongReturnType() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password").returnWrongType()).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").returnWrongType()).build();
         assertThrows(IOException.class, () -> rcon.authenticate("password"));
     }
 
     @Test
     void authenticateWrongId() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password").returnWrongId()).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").returnWrongId()).build();
         assertThrows(IOException.class, () -> rcon.authenticate("password"));
     }
 
     @Test
     void authenticateAfterClose() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator()).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator()).build();
         rcon.close();
         assertThrows(IllegalStateException.class, () -> rcon.authenticate("password"));
     }
 
     @Test
     void sendCommand() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         rcon.authenticate("password");
         assertEquals("command", rcon.sendCommand("command"));
     }
 
     @Test
     void sendManyCommands() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         rcon.authenticate("password");
 
         for (int i = 0; i < 1000; i++) {
@@ -74,13 +74,13 @@ public class RconTests {
 
     @Test
     void sendCommandWithoutAuthenticating() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator()).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator()).build();
         assertThrows(IOException.class, () -> rcon.sendCommand("command"));
     }
 
     @Test
     void sendCommandAfterClose() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         rcon.authenticate("password");
         rcon.close();
         assertThrows(IllegalStateException.class, () -> rcon.sendCommand("command"));
@@ -89,7 +89,7 @@ public class RconTests {
     @Test
     void sendCommandWrongReturnType() throws IOException {
         RconServerSimulator simulator = new RconServerSimulator().setPassword("password");
-        Rcon rcon = new RconBuilder(simulator).build();
+        Rcon rcon = new RconBuilder().withChannel(simulator).build();
         rcon.authenticate("password");
         simulator.returnWrongType();
         assertThrows(IOException.class, () -> rcon.sendCommand("command"));
@@ -98,7 +98,7 @@ public class RconTests {
     @Test
     void sendCommandWrongId() throws IOException {
         RconServerSimulator simulator = new RconServerSimulator().setPassword("password");
-        Rcon rcon = new RconBuilder(simulator).build();
+        Rcon rcon = new RconBuilder().withChannel(simulator).build();
         rcon.authenticate("password");
         simulator.returnWrongId();
         assertThrows(IOException.class, () -> rcon.sendCommand("command"));
@@ -106,7 +106,7 @@ public class RconTests {
 
     @Test
     void testMaxPayloadSize() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password")).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         rcon.authenticate("password");
         assertDoesNotThrow(() -> rcon.sendCommand(new String(new char[1446])));
         assertThrows(IllegalArgumentException.class, () -> rcon.sendCommand(new String(new char[1447])));
@@ -114,7 +114,7 @@ public class RconTests {
 
     @Test
     void testEOF() throws IOException {
-        Rcon rcon = new RconBuilder(new RconServerSimulator().setPassword("password").returnEOF()).build();
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").returnEOF()).build();
         assertThrows(EOFException.class, () -> rcon.authenticate("password"));
     }
 }
