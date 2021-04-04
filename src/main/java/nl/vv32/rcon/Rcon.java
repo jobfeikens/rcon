@@ -2,6 +2,7 @@ package nl.vv32.rcon;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
@@ -24,6 +25,10 @@ public class Rcon implements Closeable {
 
     public static Rcon open(final SocketAddress remote) throws IOException {
         return new RconBuilder().withChannel(SocketChannel.open(remote)).build();
+    }
+
+    public static Rcon open(final String hostname, final int port) throws IOException {
+        return open(new InetSocketAddress(hostname, port));
     }
 
     public boolean authenticate(final String password) throws IOException {
