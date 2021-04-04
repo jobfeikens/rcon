@@ -15,6 +15,7 @@ public class RconTests {
     @Test
     void connect() throws IOException {
         assertThrows(UnresolvedAddressException.class, () -> Rcon.open(new InetSocketAddress("thishostsdoesntexist", 65535)));
+        assertThrows(UnresolvedAddressException.class, () -> Rcon.open("thishostdoesntexist", 65535));
     }
 
     @Test
