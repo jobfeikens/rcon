@@ -16,4 +16,19 @@ public static void main(String[] args) throws IOException {
     }
 }
 ```
-  
+
+## Add RCON to your project
+
+### Gradle
+```gradle
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'nl.vv32.rcon:rcon:1.0.0'
+}
+```
+
+### Jar
+If you're not using Gradle, you can download the latest version [here](https://github.com/jobfeikens/rcon/releases).
