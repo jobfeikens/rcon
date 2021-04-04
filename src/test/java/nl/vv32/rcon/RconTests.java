@@ -14,7 +14,18 @@ public class RconTests {
 
     @Test
     void connect() throws IOException {
-        assertThrows(UnresolvedAddressException.class, () -> Rcon.open(new InetSocketAddress("host", 65535)));
+        assertThrows(UnresolvedAddressException.class, () -> Rcon.open(new InetSocketAddress("thishostsdoesntexist", 65535)));
+    }
+
+    @Test
+    void setup() throws IOException {
+        assertDoesNotThrow(new RconBuilder().withChannel(new RconServerSimulator())::build);
+    }
+
+    @Test
+    void close() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator()).build();
+        rcon.close();
     }
 
     @Test
