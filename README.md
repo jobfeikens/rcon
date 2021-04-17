@@ -1,6 +1,6 @@
 # RCON [![Java CI](https://github.com/jobfeikens/rcon/actions/workflows/workflow.yml/badge.svg)](https://github.com/jobfeikens/rcon/actions/workflows/workflow.yml)
 
-Java implementation of the RCON protocol
+Minimal implementation of the RCON protocol in Java.
 
 ## Example (Java 8+)
 ```java
