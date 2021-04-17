@@ -16,7 +16,7 @@ public class Rcon implements Closeable {
     private volatile boolean closed = false;
     private volatile int requestCounter;
 
-    Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
+    public Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
         this.channel = channel;
 
         reader = new PacketReader(channel::read, readBufferCapacity);
