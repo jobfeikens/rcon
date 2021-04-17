@@ -13,8 +13,8 @@ public class Rcon implements Closeable {
     final private PacketReader reader;
     final private PacketWriter writer;
 
-    private boolean closed = false;
-    private int requestCounter;
+    private volatile boolean closed = false;
+    private volatile int requestCounter;
 
     Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
         this.channel = channel;
