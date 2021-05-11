@@ -19,6 +19,7 @@ public static void main(String[] args) throws IOException {
 ## Add RCON to your project
 
 ### Gradle
+Add to `build.gradle`:
 ```gradle
 repositories {
     mavenCentral()
@@ -27,6 +28,18 @@ repositories {
 dependencies {
     implementation 'nl.vv32.rcon:rcon:1.0.0'
 }
+```
+
+### Maven
+Add to `pom.xml`:
+```xml
+<dependencies>
+    <dependency>
+        <groupId>nl.vv32.rcon</groupId>
+        <artifactId>rcon</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
 ```
 
 ### Jar
