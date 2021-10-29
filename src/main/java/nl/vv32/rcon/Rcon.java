@@ -32,8 +32,12 @@ public class Rcon implements Closeable {
     }
 
     public boolean authenticate(final String password) throws IOException {
-        final Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
+        Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
 
+        // This works around a quirk in CS:GO where an empty SERVERDATA_RESPONSE_VALUE is sent before the SERVERDATA_AUTH_RESPONSE.
+        if (response.type == PacketType.SERVERDATA_RESPONSE_VALUE) {
+            response = read(response.requestId);
+        }
         if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
             throw new IOException("Invalid auth response type: " + response.type);
         }
@@ -59,10 +63,18 @@ public class Rcon implements Closeable {
         final int requestId = requestCounter++;
 
         writer.write(new Packet(requestId, packetType, payload));
+
+        return read(requestId);
+    }
+
+    private synchronized Packet read(final int expectedRequestId) throws IOException {
+        if (closed) {
+            throw new IllegalStateException("Trying to use RCON after close was called");
+        }
         final Packet response = reader.read();
 
-        if (response.isValid() && response.requestId != requestId) {
-            throw new IOException(String.format("Unexpected response id (%d -> %d)", requestId, response.requestId));
+        if (response.isValid() && response.requestId != expectedRequestId) {
+            throw new IOException(String.format("Unexpected response id (%d -> %d)", expectedRequestId, response.requestId));
         }
         return response;
     }

@@ -13,6 +13,10 @@ public class Packet {
         this.payload = payload;
     }
 
+    public Packet(final int requestId, final int type) {
+        this(requestId, type, "");
+    }
+
     public boolean isValid() {
         return requestId != -1;
     }

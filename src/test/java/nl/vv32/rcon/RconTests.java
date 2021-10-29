@@ -67,6 +67,19 @@ public class RconTests {
         assertThrows(IllegalStateException.class, () -> rcon.authenticate("password"));
     }
 
+    // See issue #3
+    @Test
+    void authenticateCsgo() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").doCsgoAuthentication()).build();
+        assertTrue(rcon.authenticate("password"));
+    }
+
+    @Test
+    void authenticateCsgoWrongPassword() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").doCsgoAuthentication()).build();
+        assertFalse(rcon.authenticate("wrongPassword"));
+    }
+
     @Test
     void sendCommand() throws IOException {
         Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
