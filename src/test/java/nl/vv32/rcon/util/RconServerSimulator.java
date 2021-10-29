@@ -7,6 +7,7 @@ import nl.vv32.rcon.PacketType;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
+import java.util.function.Consumer;
 
 public class RconServerSimulator implements ByteChannel {
 
@@ -16,6 +17,7 @@ public class RconServerSimulator implements ByteChannel {
     private boolean returnWrongType = false;
     private boolean returnWrongId = false;
     private boolean returnEOF = false;
+    private boolean doCsgoAuthentication = false;
 
     final private ByteBuffer buffer = ByteBuffer.allocate(8192).order(ByteOrder.LITTLE_ENDIAN);
 
@@ -39,6 +41,11 @@ public class RconServerSimulator implements ByteChannel {
         return this;
     }
 
+    public RconServerSimulator doCsgoAuthentication() {
+        doCsgoAuthentication = true;
+        return this;
+    }
+
     @Override
     public int read(final ByteBuffer destination) {
 
@@ -58,10 +65,13 @@ public class RconServerSimulator implements ByteChannel {
         }
 
         final int startPosition = destination.position();
-        final Packet response = generateResponse(request);
 
-        destination.putInt(10 + response.payload.length());
-        PacketCodec.encode(response, destination);
+        generateResponses(request, response -> {
+            final Packet mutatedResponse = mutateResponse(response);
+
+            destination.putInt(10 + mutatedResponse.payload.length());
+            PacketCodec.encode(mutatedResponse, destination);
+        });
         return destination.position() - startPosition;
     }
 
@@ -82,39 +92,39 @@ public class RconServerSimulator implements ByteChannel {
 
     }
 
-    private Packet generateResponse(final Packet request) {
-        int requestId = request.requestId;
-        int returnType;
-        String payload = "";
-
+    private void generateResponses(final Packet request, Consumer<Packet> responseConsumer) {
 
         switch (request.type) {
             case PacketType.SERVERDATA_AUTH:
-                if (!request.payload.equals(password)) {
-                    requestId = -1;
+
+                if (doCsgoAuthentication) {
+                    responseConsumer.accept(new Packet(request.requestId, PacketType.SERVERDATA_RESPONSE_VALUE));
                 }
-                returnType = PacketType.SERVERDATA_AUTH_RESPONSE;
+
+                responseConsumer.accept(new Packet(
+                        request.payload.equals(password) ? request.requestId : -1,
+                        PacketType.SERVERDATA_AUTH_RESPONSE));
                 break;
+
             case PacketType.SERVERDATA_EXECCOMMAND:
-                returnType = PacketType.SERVERDATA_RESPONSE_VALUE;
-                payload = request.payload;
-                if (!isAuthenticated) {
-                    requestId = -1;
-                    payload = "Not authenticated";
-                }
+
+                responseConsumer.accept(new Packet(
+                        isAuthenticated ? request.requestId : -1,
+                        PacketType.SERVERDATA_RESPONSE_VALUE,
+                        isAuthenticated ? request.payload : "Not authenticated"));
+
                 break;
             default:
-                returnType = 0xff;
+                responseConsumer.accept(new Packet(request.requestId, 0xff));
                 break;
         }
+    }
 
-        if (returnWrongType) {
-            returnType = 0xef;
-        }
-        if (returnWrongId) {
-            requestId++;
-        }
-
-        return new Packet(requestId, returnType, payload);
+    private Packet mutateResponse(Packet response) {
+        return new Packet(
+                response.requestId + (returnWrongId ? 1 : 0),
+                returnWrongType ? 0xef : response.type,
+                response.payload
+        );
     }
 }
