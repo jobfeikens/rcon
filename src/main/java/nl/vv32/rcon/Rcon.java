@@ -34,15 +34,11 @@ public class Rcon implements Closeable {
     public boolean authenticate(final String password) throws IOException {
         Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
 
-        // If we get a SERVERDATA_RESPONSE_VALUE then retry.
         // This works around a quirk in CS:GO where an empty SERVERDATA_RESPONSE_VALUE is sent before the SERVERDATA_AUTH_RESPONSE.
         if (response.type == PacketType.SERVERDATA_RESPONSE_VALUE) {
-            response = read(requestCounter -1 );
-
-            if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
-                throw new IOException("Invalid auth response type: " + response.type);
-            }
-        } else if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
+            response = read(response.requestId);
+        }
+        if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
             throw new IOException("Invalid auth response type: " + response.type);
         }
         return response.isValid();
@@ -75,7 +71,6 @@ public class Rcon implements Closeable {
         if (closed) {
             throw new IllegalStateException("Trying to use RCON after close was called");
         }
-
         final Packet response = reader.read();
 
         if (response.isValid() && response.requestId != expectedRequestId) {
