@@ -13,7 +13,6 @@ public class Rcon implements Closeable {
     final private PacketReader reader;
     final private PacketWriter writer;
 
-    private volatile boolean closed = false;
     private volatile int requestCounter;
 
     Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
@@ -67,9 +66,6 @@ public class Rcon implements Closeable {
     }
 
     private synchronized Packet writeAndRead(final int packetType, final String payload) throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Trying to use RCON after close was called");
-        }
         final int requestId = requestCounter++;
 
         writer.write(new Packet(requestId, packetType, payload));
@@ -78,9 +74,6 @@ public class Rcon implements Closeable {
     }
 
     private synchronized Packet read(final int expectedRequestId) throws IOException {
-        if (closed) {
-            throw new IllegalStateException("Trying to use RCON after close was called");
-        }
         final Packet response = reader.read();
 
         if (response.isValid() && response.requestId != expectedRequestId) {
@@ -92,6 +85,5 @@ public class Rcon implements Closeable {
     @Override
     public void close() throws IOException {
         channel.close();
-        closed = true;
     }
 }
