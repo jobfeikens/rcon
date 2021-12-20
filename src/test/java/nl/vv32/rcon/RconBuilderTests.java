@@ -18,6 +18,7 @@ public class RconBuilderTests {
     @Test
     void setBufferCapacity() {
         final RconBuilder builder = new RconBuilder()
+                .withChannel(new RconServerSimulator())
                 .withReadBufferCapacity(100)
                 .withWriteBufferCapacity(100);
 
