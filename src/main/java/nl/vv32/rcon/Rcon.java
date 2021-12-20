@@ -44,6 +44,12 @@ public class Rcon implements Closeable {
         return response.isValid();
     }
 
+    public void tryAuthenticate(final String password) throws IOException {
+        if (!authenticate(password)) {
+            throw new IOException("Authentication failed");
+        }
+    }
+
     public String sendCommand(final String command) throws IOException {
         final Packet response = writeAndRead(PacketType.SERVERDATA_EXECCOMMAND, command);
 

@@ -36,6 +36,12 @@ public class RconTests {
     }
 
     @Test
+    void tryAuthenticate() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
+        assertDoesNotThrow(() -> rcon.tryAuthenticate("password"));
+    }
+
+    @Test
     void authenticateTwice() throws IOException {
         Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         assertTrue(rcon.authenticate("password"));
@@ -46,6 +52,12 @@ public class RconTests {
     void authenticateWithWrongPassword() throws IOException {
         Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
         assertFalse(rcon.authenticate("wrongPassword"));
+    }
+
+    @Test
+    void tryAuthenticateWithWrongPassword() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
+        assertThrows(IOException.class, () -> rcon.tryAuthenticate("wrongPassword"));
     }
 
     @Test
