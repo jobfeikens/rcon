@@ -14,4 +14,13 @@ public class RconBuilderTests {
         builder.withChannel(new RconServerSimulator());
         assertDoesNotThrow(builder::build);
     }
+
+    @Test
+    void setBufferCapacity() {
+        final RconBuilder builder = new RconBuilder()
+                .withReadBufferCapacity(100)
+                .withWriteBufferCapacity(100);
+
+        assertDoesNotThrow(builder::build);
+    }
 }
