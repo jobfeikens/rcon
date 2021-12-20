@@ -32,11 +32,15 @@ public class Rcon implements Closeable {
     }
 
     public boolean authenticate(final String password) throws IOException {
-        Packet response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
+        Packet response;
 
-        // This works around a quirk in CS:GO where an empty SERVERDATA_RESPONSE_VALUE is sent before the SERVERDATA_AUTH_RESPONSE.
-        if (response.type == PacketType.SERVERDATA_RESPONSE_VALUE) {
-            response = read(response.requestId);
+        synchronized (this) {
+            response = writeAndRead(PacketType.SERVERDATA_AUTH, password);
+
+            // This works around a quirk in CS:GO where an empty SERVERDATA_RESPONSE_VALUE is sent before the SERVERDATA_AUTH_RESPONSE.
+            if (response.type == PacketType.SERVERDATA_RESPONSE_VALUE) {
+                response = read(response.requestId);
+            }
         }
         if (response.type != PacketType.SERVERDATA_AUTH_RESPONSE) {
             throw new IOException("Invalid auth response type: " + response.type);
