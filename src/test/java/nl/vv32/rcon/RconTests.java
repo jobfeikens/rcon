@@ -72,6 +72,13 @@ public class RconTests {
         assertThrows(IOException.class, () -> rcon.authenticate("password"));
     }
 
+    @Test
+    void authenticateAfterClose() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator()).build();
+        rcon.close();
+        assertThrows(IOException.class, () -> rcon.authenticate("password"));
+    }
+
     // See issue #3
     @Test
     void authenticateCsgo() throws IOException {
@@ -105,6 +112,14 @@ public class RconTests {
     @Test
     void sendCommandWithoutAuthenticating() throws IOException {
         Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator()).build();
+        assertThrows(IOException.class, () -> rcon.sendCommand("command"));
+    }
+
+    @Test
+    void sendCommandAfterClose() throws IOException {
+        Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password")).build();
+        rcon.authenticate("password");
+        rcon.close();
         assertThrows(IOException.class, () -> rcon.sendCommand("command"));
     }
 

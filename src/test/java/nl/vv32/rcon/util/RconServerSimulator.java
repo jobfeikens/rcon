@@ -4,6 +4,7 @@ import nl.vv32.rcon.Packet;
 import nl.vv32.rcon.PacketCodec;
 import nl.vv32.rcon.PacketType;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
@@ -11,7 +12,7 @@ import java.util.function.Consumer;
 
 public class RconServerSimulator implements ByteChannel {
 
-    private boolean isOpen = false;
+    private boolean isOpen = true;
     private boolean isAuthenticated = false;
     private String password = "";
     private boolean returnWrongType = false;
@@ -47,8 +48,10 @@ public class RconServerSimulator implements ByteChannel {
     }
 
     @Override
-    public int read(final ByteBuffer destination) {
-
+    public int read(final ByteBuffer destination) throws IOException {
+        if (!isOpen) {
+            throw new IOException("Server simulator closed");
+        }
         if (returnEOF) {
             return -1;
         }
@@ -76,7 +79,10 @@ public class RconServerSimulator implements ByteChannel {
     }
 
     @Override
-    public int write(final ByteBuffer source) {
+    public int write(final ByteBuffer source) throws IOException {
+        if (!isOpen) {
+            throw new IOException("Server simulator closed");
+        }
         final int startPosition = buffer.position();
         buffer.put(source);
         return buffer.position() - startPosition;
@@ -89,7 +95,7 @@ public class RconServerSimulator implements ByteChannel {
 
     @Override
     public void close() {
-
+        isOpen = false;
     }
 
     private void generateResponses(final Packet request, Consumer<Packet> responseConsumer) {
