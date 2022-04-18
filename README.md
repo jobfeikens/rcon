@@ -45,15 +45,23 @@ Add to `pom.xml`:
 ### Jar
 If you're not using Gradle, you can download the latest version [here](https://github.com/jobfeikens/rcon/releases).
 
-## Changing the packet body codec
-By default, the bodies of packets are encoded as ASCII.
-To use UTF8 (or any other charset for that matter), use the following example;
 
+## Modifying client behaviour
+By default (using `Rcon.open`), the client uses the RCON protocol as described in [https://developer.valvesoftware.com/wiki/Source_RCON_Protocol](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol).
+
+By using `RconBuilder` a couple of parameters can be changed:
+- Read buffer capacity
+- Write buffer capacity
+- Packet payload encoding
+
+Example:
 ```java
 try (Rcon rcon = Rcon.newBuilder()
         .withChannel(SocketChannel.open(
                 new InetSocketAddress("localhost", 25575)))
         .withCharset(StandardCharsets.UTF_8)
+        .withReadBufferCapacity(1234)
+        .withWriteBufferCapacity(1234)
         .build()) {
     
     ...
