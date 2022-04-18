@@ -1,17 +1,17 @@
 package nl.vv32.rcon;
 
 import java.nio.channels.ByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class RconBuilder {
 
-    public static int DEFAULT_READ_BUFFER_CAPACITY = 4110;
-    public static int DEFAULT_WRITE_BUFFER_SIZE = 1460;
-
     private ByteChannel channel;
 
-    private Integer readBufferCapacity;
-    private Integer writeBufferCapacity;
+    private Integer readBufferCapacity = 4110;
+    private Integer writeBufferCapacity = 1460;
+    private Charset charset = StandardCharsets.US_ASCII;
 
     public RconBuilder withChannel(ByteChannel channel) {
         this.channel = channel;
@@ -28,10 +28,17 @@ public class RconBuilder {
         return this;
     }
 
+    public RconBuilder withCharset(final Charset charset) {
+        this.charset = charset;
+        return this;
+    }
+
     public Rcon build() {
 
         return new Rcon(Objects.requireNonNull(channel, "channel"),
-                readBufferCapacity != null ? readBufferCapacity : DEFAULT_READ_BUFFER_CAPACITY,
-                writeBufferCapacity != null ? writeBufferCapacity : DEFAULT_WRITE_BUFFER_SIZE);
+                readBufferCapacity,
+                writeBufferCapacity,
+                new PacketCodec(charset)
+        );
     }
 }

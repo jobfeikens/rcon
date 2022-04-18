@@ -8,7 +8,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.UnresolvedAddressException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class RconTests {
 
@@ -153,5 +156,15 @@ public class RconTests {
     void testEOF() throws IOException {
         Rcon rcon = new RconBuilder().withChannel(new RconServerSimulator().setPassword("password").returnEOF()).build();
         assertThrows(EOFException.class, () -> rcon.authenticate("password"));
+    }
+
+    @Test
+    void testUtf8Support() throws IOException {
+        String text = "\uD83D\uDC22";  // Turtle emoji
+        final Charset charset = StandardCharsets.UTF_8;
+        final RconServerSimulator simulator = new RconServerSimulator().setCharset(charset).setPassword(text);
+        final Rcon rcon = new RconBuilder().withChannel(simulator).withCharset(charset).build();
+        rcon.authenticate(text);
+        assertEquals(text, rcon.sendCommand(text));
     }
 }

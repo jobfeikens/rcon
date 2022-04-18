@@ -44,3 +44,18 @@ Add to `pom.xml`:
 
 ### Jar
 If you're not using Gradle, you can download the latest version [here](https://github.com/jobfeikens/rcon/releases).
+
+## Changing the packet body codec
+By default, the bodies of packets are encoded as ASCII.
+To use UTF8 (or any other charset for that matter), use the following example;
+
+```java
+try (Rcon rcon = Rcon.newBuilder()
+        .withChannel(SocketChannel.open(
+                new InetSocketAddress("localhost", 25575)))
+        .withCharset(StandardCharsets.UTF_8)
+        .build()) {
+    
+    ...
+}
+```

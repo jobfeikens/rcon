@@ -3,18 +3,17 @@ package nl.vv32.rcon;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.StandardCharsets;
 
 class PacketWriter {
 
     final private Destination destination;
+    final private PacketCodec codec;
     final ByteBuffer buffer;
 
-    PacketWriter(final Destination destination,
-                        final int bufferCapacity) {
+    PacketWriter(final Destination destination, final int bufferCapacity,
+                 final PacketCodec codec) {
         this.destination = destination;
-
+        this.codec = codec;
         buffer = ByteBuffer.allocate(bufferCapacity)
                 .order(ByteOrder.LITTLE_ENDIAN);
     }
@@ -25,10 +24,9 @@ class PacketWriter {
         }
 
         buffer.clear();
-
-        buffer.putInt(10 + packet.payload.length());
-        PacketCodec.encode(packet, buffer);
-
+        buffer.position(Integer.BYTES);
+        codec.encode(packet, buffer);
+        buffer.putInt(0, buffer.position() - Integer.BYTES);
         buffer.flip();
         return destination.write(buffer);
     }

@@ -21,4 +21,3 @@ public class Packet {
         return requestId != -1;
     }
 }
-  

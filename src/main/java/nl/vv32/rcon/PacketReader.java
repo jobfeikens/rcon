@@ -4,16 +4,19 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.ReadableByteChannel;
 
 class PacketReader {
 
     final private Source source;
+    final private PacketCodec codec;
     final private ByteBuffer buffer; //4 KiB
 
-    public PacketReader(final Source source, int bufferCapacity) {
+    public PacketReader(final Source source, final int bufferCapacity,
+                        final PacketCodec codec) {
         this.source = source;
-        buffer = ByteBuffer.allocate(bufferCapacity).order(ByteOrder.LITTLE_ENDIAN);
+        this.codec = codec;
+        buffer = ByteBuffer.allocate(bufferCapacity)
+                .order(ByteOrder.LITTLE_ENDIAN);
     }
 
     public Packet read() throws IOException {
@@ -27,7 +30,7 @@ class PacketReader {
         //Read packet
         readUntilAvailable(length);
         buffer.flip();
-        final Packet packet = PacketCodec.decode(buffer, length);
+        final Packet packet = codec.decode(buffer, length);
         buffer.compact();
 
         return packet;

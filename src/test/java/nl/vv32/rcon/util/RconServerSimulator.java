@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 public class RconServerSimulator implements ByteChannel {
@@ -20,10 +22,16 @@ public class RconServerSimulator implements ByteChannel {
     private boolean returnEOF = false;
     private boolean doCsgoAuthentication = false;
 
+    private PacketCodec codec = new PacketCodec(StandardCharsets.US_ASCII);
     final private ByteBuffer buffer = ByteBuffer.allocate(8192).order(ByteOrder.LITTLE_ENDIAN);
 
     public RconServerSimulator setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public RconServerSimulator setCharset(Charset charset) {
+        this.codec = new PacketCodec(charset);
         return this;
     }
 
@@ -60,7 +68,7 @@ public class RconServerSimulator implements ByteChannel {
 
         final int requestLength = buffer.getInt();
 
-        final Packet request = PacketCodec.decode(buffer, requestLength);
+        final Packet request = codec.decode(buffer, requestLength);
         buffer.compact();
 
         if (request.type == PacketType.SERVERDATA_AUTH) {
@@ -72,8 +80,9 @@ public class RconServerSimulator implements ByteChannel {
         generateResponses(request, response -> {
             final Packet mutatedResponse = mutateResponse(response);
 
-            destination.putInt(10 + mutatedResponse.payload.length());
-            PacketCodec.encode(mutatedResponse, destination);
+            destination.position(Integer.BYTES);
+            codec.encode(mutatedResponse, destination);
+            destination.putInt(0, destination.position() - Integer.BYTES);
         });
         return destination.position() - startPosition;
     }

@@ -15,11 +15,12 @@ public class Rcon implements Closeable {
 
     private volatile int requestCounter;
 
-    Rcon(final ByteChannel channel, final int readBufferCapacity, final int writeBufferCapacity) {
+    Rcon(final ByteChannel channel, final int readBufferCapacity,
+         final int writeBufferCapacity, final PacketCodec codec) {
         this.channel = channel;
 
-        reader = new PacketReader(channel::read, readBufferCapacity);
-        writer = new PacketWriter(channel::write, writeBufferCapacity);
+        reader = new PacketReader(channel::read, readBufferCapacity, codec);
+        writer = new PacketWriter(channel::write, writeBufferCapacity, codec);
     }
 
     public static Rcon open(final SocketAddress remote) throws IOException {
@@ -28,6 +29,10 @@ public class Rcon implements Closeable {
 
     public static Rcon open(final String hostname, final int port) throws IOException {
         return open(new InetSocketAddress(hostname, port));
+    }
+
+    public static RconBuilder newBuilder() {
+        return new RconBuilder();
     }
 
     public boolean authenticate(final String password) throws IOException {
