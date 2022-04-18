@@ -47,7 +47,7 @@ If you're not using Gradle, you can download the latest version [here](https://g
 
 
 ## Modifying client behaviour
-By default (using `Rcon.open`), the client uses the RCON protocol as described in [https://developer.valvesoftware.com/wiki/Source_RCON_Protocol](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol).
+By default (using `Rcon.open`), the client uses the RCON protocol as described by the [Source RCON Protocol](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol).
 
 By using `RconBuilder` a couple of parameters can be changed:
 - Read buffer capacity
